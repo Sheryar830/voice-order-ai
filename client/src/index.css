@@ -1982,6 +1982,93 @@ a {
 }
 
 @media (max-width: 768px) {
+  .conversation-page .conversation-layout {
+    min-height: 0;
+    gap: 18px;
+    padding-top: 0;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .conversation-page .voice-area {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .conversation-page .voice-orb {
+    width: min(76vw, 300px);
+  }
+
+  .conversation-page .voice-status-text {
+    margin-top: -20px;
+  }
+
+  .conversation-page .voice-status-text h1 {
+    font-size: 1.55rem;
+  }
+
+  .conversation-page .voice-status-text p {
+    font-size: 0.92rem;
+  }
+
+  .conversation-page .progress-panel {
+    min-height: 110px;
+    margin: 14px auto;
+    padding: 14px 5px;
+  }
+
+  .conversation-page .progress-step > span {
+    width: 42px;
+    height: 42px;
+  }
+
+  .conversation-page .progress-step strong,
+  .conversation-page .progress-step small {
+    font-size: 0.78rem;
+  }
+
+  .conversation-page .secondary-button {
+    min-height: 56px;
+  }
+
+  .conversation-page .voice-tip {
+    margin-top: 12px;
+    font-size: 0.82rem;
+  }
+
+  .conversation-page .conversation-panel {
+    width: 100%;
+    height: min(62dvh, 560px);
+    min-height: 320px;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
+    padding: 18px 12px calc(12px + env(safe-area-inset-bottom));
+    overflow: hidden;
+  }
+
+  .conversation-page .conversation-header {
+    flex: 0 0 auto;
+    margin-bottom: 14px;
+  }
+
+  .conversation-page .message-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: min(48dvh, 430px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-right: 0;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .conversation-page .message-list::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
   .home-page .home-hero {
     min-height: 0;
     padding-bottom: clamp(185px, 56vw, 410px);

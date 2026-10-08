@@ -8,15 +8,30 @@ export default function ConversationPanel({
   status = "listening",
 }) {
   const messageListRef = useRef(null);
+  const previousMessagesRef = useRef(messages);
 
   useEffect(() => {
-    const messageList = messageListRef.current;
-    if (!messageList) return;
+    const latestMessage = messages[messages.length - 1];
+    const previousMessages = previousMessagesRef.current;
+    const previousLatestMessage =
+      previousMessages[previousMessages.length - 1];
+    const isStreamingUpdate =
+      latestMessage?.isPartial &&
+      latestMessage.id === previousLatestMessage?.id;
 
-    messageList.scrollTo({
-      top: messageList.scrollHeight,
-      behavior: "smooth",
+    previousMessagesRef.current = messages;
+
+    const frame = requestAnimationFrame(() => {
+      const messageList = messageListRef.current;
+      if (!messageList) return;
+
+      messageList.scrollTo({
+        top: messageList.scrollHeight,
+        behavior: isStreamingUpdate ? "auto" : "smooth",
+      });
     });
+
+    return () => cancelAnimationFrame(frame);
   }, [messages]);
 
   return (
