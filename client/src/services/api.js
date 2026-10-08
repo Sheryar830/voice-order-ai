@@ -1,5 +1,6 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
 
 export async function createLiveSession() {
   const response = await fetch(`${API_BASE_URL}/api/session`, {
@@ -13,6 +14,24 @@ export async function createLiveSession() {
 
   if (!response.ok || !data.success) {
     throw new Error(data.message || "Unable to create Gemini session");
+  }
+
+  return data;
+}
+
+export async function finalizeOrder(order) {
+  const response = await fetch(`${API_BASE_URL}/api/order/finalize`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(order),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success || !data.order) {
+    throw new Error(data.message || "Unable to finalize order");
   }
 
   return data;

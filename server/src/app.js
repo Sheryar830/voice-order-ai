@@ -5,6 +5,7 @@ import {
   errorHandler,
   notFoundHandler,
 } from "./middleware/errorHandler.js";
+import orderRouter from "./routes/order.routes.js";
 import sessionRouter from "./routes/session.routes.js";
 
 const app = express();
@@ -41,6 +42,7 @@ app.get("/api/health", (_request, response) => {
 });
 
 app.use("/api/session", sessionRouter);
+app.use("/api/order", orderRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

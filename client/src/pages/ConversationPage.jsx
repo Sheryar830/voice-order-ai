@@ -8,7 +8,7 @@ import ProgressSteps from "../components/ProgressSteps";
 import VoiceOrb from "../components/VoiceOrb";
 import AppLayout from "../layouts/AppLayout";
 
-import { createLiveSession } from "../services/api";
+import { createLiveSession, finalizeOrder } from "../services/api";
 import { connectGeminiLive } from "../services/geminiLive";
 
 import { createAudioPlayer } from "../utils/audioPlayer";
@@ -68,6 +68,7 @@ export default function ConversationPage() {
   const sessionAttemptRef = useRef(0);
   const userTranscriptBuffer = useRef("");
   const assistantTranscriptBuffer = useRef("");
+  const orderFinalizationKeysRef = useRef(new Set());
 
   async function cleanup() {
     try {
@@ -172,6 +173,7 @@ export default function ConversationPage() {
     const sessionAttempt = ++sessionAttemptRef.current;
     userTranscriptBuffer.current = "";
     assistantTranscriptBuffer.current = "";
+    orderFinalizationKeysRef.current.clear();
     setError("");
     setStatus("connecting");
 
@@ -260,30 +262,66 @@ export default function ConversationPage() {
             for (const call of message.toolCall.functionCalls) {
               if (call.name !== "complete_order") continue;
 
+              const finalizationKey = JSON.stringify(call.args ?? {});
+
+              if (orderFinalizationKeysRef.current.has(finalizationKey)) {
+                continue;
+              }
+
+              orderFinalizationKeysRef.current.add(finalizationKey);
+
               const order = {
                 ...call.args,
                 status: "confirmed",
               };
 
-              saveFinalOrder(order);
+              try {
+                const response = await finalizeOrder(order);
 
-              sessionRef.current?.sendToolResponse({
-                functionResponses: [
-                  {
-                    id: call.id,
-                    name: call.name,
-                    response: {
-                      success: true,
+                saveFinalOrder(response.order);
+
+                sessionRef.current?.sendToolResponse({
+                  functionResponses: [
+                    {
+                      id: call.id,
+                      name: call.name,
+                      response: {
+                        success: true,
+                      },
                     },
-                  },
-                ],
-              });
+                  ],
+                });
 
-              setStatus("completed");
+                setStatus("completed");
 
-              await cleanup();
+                await cleanup();
 
-              navigate("/order-complete");
+                navigate("/order-complete");
+                return;
+              } catch (finalizationError) {
+                const message =
+                  finalizationError.message || "Unable to finalize order";
+
+                console.error(
+                  "[VoiceOrder] Unable to finalize order",
+                  finalizationError,
+                );
+                setError(message);
+                setStatus("error");
+
+                sessionRef.current?.sendToolResponse({
+                  functionResponses: [
+                    {
+                      id: call.id,
+                      name: call.name,
+                      response: {
+                        success: false,
+                        error: message,
+                      },
+                    },
+                  ],
+                });
+              }
             }
           }
         },
